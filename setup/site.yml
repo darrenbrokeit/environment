@@ -1,0 +1,43 @@
+---
+- name: Set Up Environment
+  hosts: localhost
+  become: no
+
+  tasks:
+  - name: Hello world
+    debug:
+      msg: "Hello world"
+
+  - name: Install fzf
+    community.general.homebrew:
+      name: fzf
+      state: present
+
+  - name: Set up fzf
+    ansible.builtin.lineinfile:
+      create: true
+      path: $HOME/.zshrc
+      regexp: 'source\s*<\s*\(\s*fzf\s+--zsh\s*\)\s*'
+      line: source <(fzf --zsh)
+
+  - name: Install bat 
+    community.general.homebrew:
+      name: bat
+      state: present
+
+
+    
+
+# To Install:
+# X fzf
+# fzf git integrations
+# bat
+# Replace batcat
+# jq
+# nvim
+# zoxide
+# rg
+# podman if linux
+# orbstack if mac
+# p10k
+
