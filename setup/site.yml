@@ -3,7 +3,7 @@
   hosts: localhost
   become: no
   vars:
-    os_family_linux:
+    OS_FAMILY_LINUX:
       - "Debian"
       - "RedHat"
       - "Suse"
@@ -19,6 +19,13 @@
       - helm
       - powerlevel10k
 
+    FONT_BASE_NAME: "MesloLGS%20NF"
+    FONT_FACES:
+      - "Regular"
+      - "Bold"
+      - "Italic"
+      - "Bold%20Italic"
+
   tasks:
   # Common Packages
   - name: Install Common Packages
@@ -28,7 +35,7 @@
         
   # Platform Specific Packages
   - name: Install Podman [Linux]
-    when: ansible_facts['os_family'] in os_family_linux
+    when: ansible_facts['os_family'] in OS_FAMILY_LINUX
     community.general.homebrew:
       name: podman
       state: present
@@ -76,22 +83,36 @@
      regexp: 'source\s+.*powerlevel10k.zsh-theme'
      line: "source {{ ansible_env.HOMEBREW_PREFIX }}/share/powerlevel10k/powerlevel10k.zsh-theme"
 
-    
-    
+  tasks:
+  - name: Check if fonts directory exists
+    ansible.builtin.stat:
+      path: $HOME/.fonts
+    register: result
+  
+  - name: Create directory if it does not exist
+    when: not result.stat.exists
+    ansible.builtin.file:
+      path: $HOME/.fonts
+      state: directory
+
+  - name: Download Fonts
+    ansible.builtin.get_url:
+      url: "https://github.com/romkatv/powerlevel10k-media/raw/master/{{FONT_BASE_NAME}}%20{{ item }}.ttf"
+      dest: "$HOME/.fonts/{{ FONT_BASE_NAME | urldecode }} {{ item | urldecode}}.ttf"
+    loop: "{{ FONT_FACES }}"
 
 
-# To Install:
-#X fzf
-# fzf git integrations
-#X kubectl
-#X uv
-# helm
-#X bat
-#X jq
-#X nvim
-#X zoxide
-#X rg
-#X podman if linux
-#X orbstack if mac
-# p10k
+  - name: Determine if GUI exists (to refresh font cache)
+    ansible.builtin.find:
+      paths: /usr/bin
+      file_type: any
+      use_regex: yes
+      patterns: '.*session'
+    register: result
 
+  - name: Refresh Font Cache
+    when: find_matches is defined
+    become: true
+    ansible.builtin.shell: fc-cache -f -v
+      
+## (TODO): Install dotfiles
