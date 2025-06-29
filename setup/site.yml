@@ -83,7 +83,6 @@
      regexp: 'source\s+.*powerlevel10k.zsh-theme'
      line: "source {{ ansible_env.HOMEBREW_PREFIX }}/share/powerlevel10k/powerlevel10k.zsh-theme"
 
-  tasks:
   - name: Check if fonts directory exists
     ansible.builtin.stat:
       path: $HOME/.fonts
