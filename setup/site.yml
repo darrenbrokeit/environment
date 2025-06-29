@@ -2,12 +2,14 @@
 - name: Set Up Environment
   hosts: localhost
   become: no
+  vars:
+    os_family_linux:
+      - "Debian"
+      - "RedHat"
+      - "Suse"
 
   tasks:
-  - name: Hello world
-    debug:
-      msg: "Hello world"
-
+  # zsh utils
   - name: Install fzf
     community.general.homebrew:
       name: fzf
@@ -18,26 +20,91 @@
       create: true
       path: $HOME/.zshrc
       regexp: 'source\s*<\s*\(\s*fzf\s+--zsh\s*\)\s*'
-      line: source <(fzf --zsh)
+      line: "source <(fzf --zsh)"
 
   - name: Install bat 
     community.general.homebrew:
       name: bat
       state: present
 
+  - name: Install zoxide
+    community.general.homebrew:
+      name: zoxide
+      state: present
 
+  - name: Install ripgrep
+    community.general.homebrew:
+      name: ripgrep
+      state: present
+
+  # Editor
+  - name: Install neovim
+    community.general.homebrew:
+      name: neovim
+      state: present
+
+  # Python
+  - name: Install uv
+    community.general.homebrew:
+      name: uv
+      state: present
+
+  # Containers
+  - name: Install Podman [Linux]
+    when: ansible_facts['os_family'] in os_family_linux
+    community.general.homebrew:
+      name: podman
+      state: present
+
+  - name: Install Orbstack [Mac]
+    when: ansible_facts['os_family'] == "Darwin"
+    community.general.homebrew:
+      name: orbstack
+      state: present
+
+  # Kubernetes
+  - name: Install kubectl
+    community.general.homebrew:
+      name: kubectl
+      state: present
+
+  - name: Install kubecm
+    community.general.homebrew:
+      name: kubecm
+      state: present
+
+  - name: Install helm
+    community.general.homebrew:
+      name: helm
+      state: present
+
+  - name: Install Powerlevel10k
+    community.general.homebrew:
+      name: powerlevel10k
+      state: present
+
+  # Shell Visual Customization
+  - name: Set Up Powerlevel10k
+    ansible.builtin.lineinfile:
+     create: true
+     path: $HOME/.zshrc
+     regexp: 'source\s+.*powerlevel10k.zsh-theme'
+     line: "source {{ ansible_env.HOMEBREW_PREFIX }}/share/powerlevel10k/powerlevel10k.zsh-theme"
     
 
+
 # To Install:
-# X fzf
+#X fzf
 # fzf git integrations
-# bat
-# Replace batcat
-# jq
-# nvim
-# zoxide
-# rg
-# podman if linux
-# orbstack if mac
+#X kubectl
+#X uv
+# helm
+#X bat
+#X jq
+#X nvim
+#X zoxide
+#X rg
+#X podman if linux
+#X orbstack if mac
 # p10k
 
